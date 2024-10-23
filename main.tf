@@ -1,4 +1,5 @@
   resource "aws_vpc" "vpc" {
+    provider = aws.project
     # checkov:skip=CKV2_AWS_11: In first version we won't use terraform flow logs
     cidr_block           = var.cidr_block
     instance_tenancy     = var.instance_tenancy
@@ -10,6 +11,7 @@
   }
 
   resource "aws_subnet" "subnet" {
+    provider = aws.project
     for_each = {
       for item in flatten([for netkwork_key, network in var.subnet_config : [for subnet in network.subnets : {
         "service" : netkwork_key
@@ -28,6 +30,7 @@
 
 
   resource "aws_route_table" "route_table" {
+    provider = aws.project
     for_each = var.subnet_config
     vpc_id   = aws_vpc.vpc.id
     tags = merge(
@@ -36,6 +39,7 @@
   }
 
   resource "aws_route_table_association" "subnet_association" {
+    provider = aws.project
     for_each = {
       for item in flatten([for netkwork_key, network in var.subnet_config : [for subnet in network.subnets : {
         "service" : netkwork_key
@@ -50,6 +54,7 @@
 
 
   resource "aws_internet_gateway" "igw" {
+    provider = aws.project
     count  = var.create_igw ? 1 : 0
     vpc_id = aws_vpc.vpc.id
     tags = merge(
@@ -58,6 +63,7 @@
   }
 
   resource "aws_route" "internet_route" {
+    provider = aws.project
     for_each               = { for key, value in var.subnet_config : key => value if var.create_igw && value.public }
     route_table_id         = aws_route_table.route_table[each.key].id
     destination_cidr_block = "0.0.0.0/0"
@@ -65,6 +71,7 @@
   }
 
   resource "aws_route" "nat_route" {
+    provider = aws.project
     for_each               = { for key, value in var.subnet_config : key => value if var.create_nat && value.include_nat }
     route_table_id         = aws_route_table.route_table[each.key].id
     destination_cidr_block = "0.0.0.0/0"
@@ -72,6 +79,7 @@
   }
 
   resource "aws_eip" "eip" {
+    provider = aws.project
     count  = var.create_nat ? 1 : 0
     # checkov:skip=CKV2_AWS_19: this elastic ip is associated with nat, for that reason the alert can be ignored
     tags = merge(
@@ -82,6 +90,7 @@
 
 
   resource "aws_nat_gateway" "nat" {
+    provider = aws.project
     for_each = {
 
       for network_key, network in var.subnet_config : "nat-0" => {
@@ -103,6 +112,7 @@
   }
 
   resource "aws_route" "custom_route" {
+    provider = aws.project
     for_each = {
       for item in flatten([for netkwork_key, network in var.subnet_config : [for route in network.custom_routes : {
         "service" : netkwork_key
@@ -138,6 +148,7 @@
   ####### Resource to solve CKV2_AWS_12 #####
   ###########################################
   resource "aws_default_security_group" "default" {
+    provider = aws.project
     vpc_id = aws_vpc.vpc.id
   }
 
@@ -147,6 +158,7 @@
   ####### Resource VPC Flow Logs  ###########
   ###########################################
 resource "aws_iam_role" "vpc_flow_logs_role" {
+  provider = aws.project
   name = "${join("-", tolist([var.client, var.functionality, var.environment, "vpc-flow-logs-role"]))}" #"${var.client}-${var.environment}-vpc-flow-logs-role"
   
   assume_role_policy = jsonencode({
@@ -169,6 +181,7 @@ resource "aws_iam_role" "vpc_flow_logs_role" {
 
 # Adjuntar la política necesaria para permitir que el rol de Flow Logs interactúe con CloudWatch
 resource "aws_iam_policy" "vpc_flow_logs_policy" {
+  provider = aws.project
   name = "${join("-", tolist([var.client, var.functionality, var.environment, "vpc-flow-logs-policy"]))}"#"${var.client}-${var.environment}-vpc-flow-logs-policy"
   
   policy = jsonencode({
@@ -188,6 +201,7 @@ resource "aws_iam_policy" "vpc_flow_logs_policy" {
 }
 
 resource "aws_iam_role_policy_attachment" "vpc_flow_logs_role_policy_attachment" {
+  provider = aws.project
   role       = aws_iam_role.vpc_flow_logs_role.name
   policy_arn = aws_iam_policy.vpc_flow_logs_policy.arn
 }
@@ -195,6 +209,7 @@ resource "aws_iam_role_policy_attachment" "vpc_flow_logs_role_policy_attachment"
 
 # Crear el CloudWatch Log Group para la VPC
 resource "aws_cloudwatch_log_group" "vpc_flow_log_group" {
+  provider = aws.project
   name              = "/aws/vpc/flow-logs/${aws_vpc.vpc.id}"
   retention_in_days = var.flow_log_retention_in_days
   tags = merge(
@@ -205,6 +220,7 @@ resource "aws_cloudwatch_log_group" "vpc_flow_log_group" {
 
 # Crear los Flow Logs asociados a la VPC
 resource "aws_flow_log" "vpc_flow_log" {
+  provider = aws.project
   vpc_id                = aws_vpc.vpc.id
   log_destination       = aws_cloudwatch_log_group.vpc_flow_log_group.arn
   log_destination_type  = "cloud-watch-logs"
