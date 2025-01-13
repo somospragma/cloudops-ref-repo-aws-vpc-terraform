@@ -6,7 +6,7 @@
     enable_dns_support   = var.enable_dns_support
     enable_dns_hostnames = var.enable_dns_hostnames
     tags = merge(
-      { Name = "${join("-", tolist([var.client, var.functionality, var.environment, "vpc"]))}" }
+      { Name = "${join("-", tolist([var.client, var.project, var.environment, "vpc"]))}" }
     )
   }
 
@@ -17,14 +17,15 @@
         "service" : netkwork_key
         "subnet_index" : index(network.subnets, subnet)
         "cidr_block" : subnet.cidr_block
-        "availability_zone" : subnet.availability_zone
+        #"availability_zone" : subnet.availability_zone
+        "availability_zone" : "${var.region}${subnet.availability_zone}"
       }]]) : "${item.service}-${item.subnet_index}" => item
     }
     availability_zone = each.value["availability_zone"]
     vpc_id            = aws_vpc.vpc.id
     cidr_block        = each.value["cidr_block"]
     tags = merge(
-      { Name = "${join("-", tolist([var.client, var.functionality, var.environment, "subnet", each.value["service"], tonumber(each.value["subnet_index"]) + 1]))}" }
+      { Name = "${join("-", tolist([var.client, var.project, var.environment, "subnet", each.value["service"], tonumber(each.value["subnet_index"]) + 1]))}" }
     )
   }
 
@@ -34,7 +35,7 @@
     for_each = var.subnet_config
     vpc_id   = aws_vpc.vpc.id
     tags = merge(
-      { Name = "${join("-", tolist([var.client, var.functionality, var.environment, "rtb", each.key]))}" }
+      { Name = "${join("-", tolist([var.client, var.project, var.environment, "rtb", each.key]))}" }
     )
   }
 
@@ -58,7 +59,7 @@
     count  = var.create_igw ? 1 : 0
     vpc_id = aws_vpc.vpc.id
     tags = merge(
-      { Name = "${join("-", tolist([var.client, var.functionality, var.environment, "igw"]))}" }
+      { Name = "${join("-", tolist([var.client, var.project, var.environment, "igw"]))}" }
     )
   }
 
@@ -83,11 +84,9 @@
     count  = var.create_nat ? 1 : 0
     # checkov:skip=CKV2_AWS_19: this elastic ip is associated with nat, for that reason the alert can be ignored
     tags = merge(
-      { Name = "${join("-", tolist([var.client, var.functionality, var.environment, "eip"]))}" }
+      { Name = "${join("-", tolist([var.client, var.project, var.environment, "eip"]))}" }
     )
   }
-
-
 
   resource "aws_nat_gateway" "nat" {
     provider = aws.project
@@ -103,7 +102,7 @@
     subnet_id     = aws_subnet.subnet["${each.value.service}-0"].id
 
     tags = merge(
-      { Name = "${join("-", tolist([var.client, var.functionality, var.environment, "nat"]))}" }
+      { Name = "${join("-", tolist([var.client, var.project, var.environment, "nat",]))}" }
     )
 
     # To ensure proper ordering, it is recommended to add an explicit dependency
@@ -148,8 +147,12 @@
   ####### Resource to solve CKV2_AWS_12 #####
   ###########################################
   resource "aws_default_security_group" "default" {
+    
     provider = aws.project
     vpc_id = aws_vpc.vpc.id
+    tags = {
+      Name = "default"
+    }
   }
 
 
@@ -159,7 +162,7 @@
   ###########################################
 resource "aws_iam_role" "vpc_flow_logs_role" {
   provider = aws.project
-  name = "${join("-", tolist([var.client, var.functionality, var.environment, "vpc-flow-logs-role"]))}" #"${var.client}-${var.environment}-vpc-flow-logs-role"
+  name = "${join("-", tolist([var.client, var.project, var.environment, "vpc-flow-logs-role"]))}" #"${var.client}-${var.environment}-vpc-flow-logs-role"
   
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -182,7 +185,7 @@ resource "aws_iam_role" "vpc_flow_logs_role" {
 # Adjuntar la política necesaria para permitir que el rol de Flow Logs interactúe con CloudWatch
 resource "aws_iam_policy" "vpc_flow_logs_policy" {
   provider = aws.project
-  name = "${join("-", tolist([var.client, var.functionality, var.environment, "vpc-flow-logs-policy"]))}"#"${var.client}-${var.environment}-vpc-flow-logs-policy"
+  name = "${join("-", tolist([var.client, var.project, var.environment, "vpc-flow-logs-policy"]))}"#"${var.client}-${var.environment}-vpc-flow-logs-policy"
   
   policy = jsonencode({
     Version = "2012-10-17",
@@ -213,7 +216,7 @@ resource "aws_cloudwatch_log_group" "vpc_flow_log_group" {
   name              = "/aws/vpc/flow-logs/${aws_vpc.vpc.id}"
   retention_in_days = var.flow_log_retention_in_days
   tags = merge(
-    { Name = "${join("-", tolist([var.client, var.functionality, var.environment, "flow-logs"]))}" }
+    { Name = "${join("-", tolist([var.client, var.project, var.environment, "flow-logs"]))}" }
   )
 }
 
@@ -228,7 +231,7 @@ resource "aws_flow_log" "vpc_flow_log" {
   iam_role_arn          = aws_iam_role.vpc_flow_logs_role.arn
 
   tags = merge(
-    { Name = "${join("-", tolist([var.client, var.functionality, var.environment, "vpc-flow-log"]))}" }
+    { Name = "${join("-", tolist([var.client, var.project, var.environment, "vpc-flow-log"]))}" }
   )
 }
 

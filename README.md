@@ -62,7 +62,7 @@ provider "aws" {
 }
 
 module "vpc" {
-  source = "git::https://pragma.local/somospragma/cloudops-ref-repo-aws-vpc-terraform.git"
+  source = ""
   providers = {
     aws.project = aws.project
   }
@@ -74,7 +74,7 @@ module "vpc" {
 
 ```hcl
 module "vpc" {
-  source = "git::https://pragma.local/somospragma/cloudops-ref-repo-aws-vpc-terraform.git"
+  source = ""
   
   providers = {
     aws.project = aws.project
