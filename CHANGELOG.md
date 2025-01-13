@@ -31,3 +31,11 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.h
 
 ### Seguridad
 - Configuración inicial de mínimos de seguridad.
+
+## [1.0.1] - 2024-10-18
+
+## [1.0.1] - 2025-01-13
+### Update
+- Zona de diponilibilidad.
+### Añadido
+- outputs Route Table - Subnet Id
