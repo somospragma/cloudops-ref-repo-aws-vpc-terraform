@@ -18,7 +18,7 @@
         "subnet_index" : index(network.subnets, subnet)
         "cidr_block" : subnet.cidr_block
         #"availability_zone" : subnet.availability_zone
-        "availability_zone" : "${var.region}${subnet.availability_zone}"
+        "availability_zone" : "${var.aws_region}${subnet.availability_zone}"
       }]]) : "${item.service}-${item.subnet_index}" => item
     }
     availability_zone = each.value["availability_zone"]

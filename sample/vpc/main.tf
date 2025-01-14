@@ -9,7 +9,7 @@ module "vpc" {
   client      = var.client
   project     = var.project
   environment = var.environment
-  region      = var.aws_region
+  aws_region      = var.aws_region
 
   cidr_block                 = var.cidr_block
   instance_tenancy           = var.instance_tenancy
