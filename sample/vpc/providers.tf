@@ -1,19 +1,26 @@
-######################################################################
-# Provaider AWS
-######################################################################
-provider "aws" {
-  alias   = "alias01"
-  region  = var.aws_region
-  profile = var.profile
+###########################################
+############# AWS Provider ################
+###########################################
 
+provider "aws" {
+  alias   = "alias01"                                            #Write manually alias
+  region  = var.aws_region
+  profile = var.profile                                          #Write manually profile (on demand)
+
+  assume_role {
+    role_arn = "arn:aws:iam::ACCOUNT_NUMBER:role/ROLE_NAME"      #Write manually account number and role name (on demand)
+  }
+  
   default_tags {
     tags = var.common_tags
   }
 }
 
-######################################################################
-# Definicion de versiones - Terraform - Provaiders
-######################################################################
+
+###########################################
+#Version definition - Terraform - Providers
+###########################################
+
 terraform {
   required_version = ">= 0.13.1"
 

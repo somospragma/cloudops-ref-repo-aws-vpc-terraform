@@ -4,7 +4,7 @@
 
 variable "profile" {
   type = string
-  description = "The name of profile which contains the access credentials to deploy the infrastructure"
+  description = "Profile name containing the access credentials to deploy the infrastructure on AWS"
 }
 
 variable "common_tags" {

@@ -56,15 +56,17 @@ Consulta a continuación la fecha y los resultados de nuestro escaneo de segurid
 Este módulo requiere la configuración de un provider específico para el proyecto. Debe configurarse de la siguiente manera:
 
 ```hcl
+sample/vpc/providers.tf
 provider "aws" {
-  alias = "project"
+  alias = "alias01"
   # ... otras configuraciones del provider
 }
 
+sample/vpc/main.tf
 module "vpc" {
   source = ""
   providers = {
-    aws.project = aws.project
+    aws.project = aws.alias01
   }
   # ... resto de la configuración
 }
@@ -80,7 +82,13 @@ module "vpc" {
     aws.project = aws.project
   }
 
-  # VPC properties
+  # Common configuration
+  client        = "example"
+  project       = "example"
+  environment   = "dev"
+  aws_region    = "us-east-1"
+
+  # VPC configuration
   cidr_block           = "10.0.0.0/16"
   instance_tenancy     = "default"
   enable_dns_support   = true
@@ -125,11 +133,6 @@ module "vpc" {
 
   # VPC Flow Logs configuration (obligatorio)
   flow_log_retention_in_days = 30
-
-  # Common tags
-  client        = "example"
-  functionality = "network"
-  environment   = "dev"
 }
 ```
 
