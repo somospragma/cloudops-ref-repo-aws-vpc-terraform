@@ -2,11 +2,6 @@
 ########## Common variables ###############
 ###########################################
 
-variable "profile" {
-  type = string
-  description = "Profile name containing the access credentials to deploy the infrastructure on AWS"
-}
-
 variable "aws_region" {
   type = string
   description = "AWS region where resources will be deployed"
