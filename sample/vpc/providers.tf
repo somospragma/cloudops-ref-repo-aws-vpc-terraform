@@ -3,12 +3,12 @@
 ###########################################
 
 provider "aws" {
-  alias   = "alias01"                                            #Write manually alias
+  alias   = "alias01"                                            #Write alias manually
   region  = var.aws_region
-  profile = var.profile                                          #Write manually profile (on demand)
+  profile = var.profile                                          #Write profile manually (on demand)
 
   assume_role {
-    role_arn = "arn:aws:iam::ACCOUNT_NUMBER:role/ROLE_NAME"      #Write manually account number and role name (on demand)
+    role_arn = "arn:aws:iam::ACCOUNT_NUMBER:role/ROLE_NAME"      #Write account number and role name manually (on demand)
   }
   
   default_tags {
