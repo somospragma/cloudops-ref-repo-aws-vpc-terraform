@@ -113,10 +113,23 @@ variable "subnet_config" {
     }))
   }))
   description = <<EOF
-    public = If true, set 0.0.0.0/0 to igw
-    include_nat = If true, set 0.0.0.0/0 to nat
-    subnets.cidr_block =  The IPv4 CIDR block for the subnet
-    subnets.availability_zone = AZ for the subnet
+    Custom subnet and route configuration. It is a map where each key represents a group of subnets (e.g. 'public', 'private') and the value is an object with the following structure:
+    - custom_routes: (list) A list of objects, each representing a custom route with the following properties:
+      - destination_cidr_block: (string) The destination CIDR block for the route.
+      - carrier_gateway_id: (string, optional) Identifier of a carrier gateway. This attribute can only be used when the VPC contains a subnet which is associated with a Wavelength Zone.
+      - core_network_arn: (string, optional) The Amazon Resource Name (ARN) of a core network.
+      - egress_only_gateway_id: (string, optional) Identifier of a VPC Egress Only Internet Gateway.
+      - nat_gateway_id: (string, optional) Identifier of a VPC NAT gateway.
+      - local_gateway_id: (string, optional) Identifier of a Outpost local gateway.
+      - network_interface_id: (string, optional) Identifier of an EC2 network interface.
+      - transit_gateway_id: (string, optional) Identifier of an EC2 Transit Gateway.
+      - vpc_endpoint_id: (string, optional) Identifier of a VPC Endpoint.
+      - vpc_peering_connection_id: (string, optional) Identifier of a VPC peering connection.
+    - public: (bool) If true, set 0.0.0.0/0 to igw.
+    - include_nat: (bool, optional) If true, set 0.0.0.0/0 to nat.
+    - subnets: (list) A list of objects, each representing a subnet with the following properties:
+      - cidr_block: (string) The IPv4 CIDR block for the subnet.
+      - availability_zone: (string) AZ for the subnet.
   EOF
 }
 
