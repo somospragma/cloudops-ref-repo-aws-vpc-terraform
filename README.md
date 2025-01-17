@@ -22,6 +22,14 @@ El módulo cuenta con la siguiente estructura:
 
 ```bash
 cloudops-ref-repo-aws-vpc-terraform/
+└── sample/
+    ├── data.tf
+    ├── main.tf
+    ├── outputs.tf
+    ├── providers.tf
+    ├── terraform.tfvars.sample
+    └── variables.tf
+├── .gitignore
 ├── CHANGELOG.md
 ├── data.tf
 ├── main.tf
@@ -29,12 +37,6 @@ cloudops-ref-repo-aws-vpc-terraform/
 ├── providers.tf
 ├── README.md
 ├── variables.tf
-└── sample/
-    ├── data.tf
-    ├── main.tf
-    ├── outputs.tf
-    ├── terraform.tfvars.sample
-    └── variables.tf
 ```
 
 - Los archivos principales del módulo (`data.tf`, `main.tf`, `outputs.tf`, `variables.tf`, `providers.tf`) se encuentran en el directorio raíz.
@@ -87,6 +89,15 @@ module "vpc" {
   project       = "example"
   environment   = "dev"
   aws_region    = "us-east-1"
+  common_tags = {
+    environment   = "dev"
+    project-name  = "proyecto01"
+    cost-center   = "xxx"
+    owner         = "xxx"
+    area          = "xxx"
+    provisioned   = "xxx"
+    datatype      = "xxx"
+}
 
   # VPC configuration
   cidr_block           = "10.0.0.0/16"
@@ -94,7 +105,7 @@ module "vpc" {
   enable_dns_support   = true
   enable_dns_hostnames = true
 
-  # Subnet configuration
+  #Subnet configuration
   subnet_config = {
     public = {
       public = true
@@ -190,4 +201,6 @@ module "vpc" {
 
 | Name | Description |
 |------|-------------|
-| <a name="output_vpc_id"></a> [vpc\_id](#output\_vpc\_id) | El ID de la VPC creada |
+| <a name="output_vpc_id"></a> [vpc_id](#output\_vpc_id) | ID de la VPC creada |
+| <a name="output_subnet_ids"></a> [subnet_ids](#output\_subnet_ids) | IDs de las sub redes creadas |
+| <a name="output_route_table_ids"></a> [route_table_ids](#output\_route_table_ids) | IDs de la tablas de rutas creadas |

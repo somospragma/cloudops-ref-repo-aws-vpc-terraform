@@ -3,7 +3,7 @@
 ###########################################
 
 module "vpc" {
-  source = "../../module/vpc"
+  source = "../../"
   providers = {
     aws.project = aws.alias01              #Write manually alias (the same alias name configured in providers.tf)
   }
