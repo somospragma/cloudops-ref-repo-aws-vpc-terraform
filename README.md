@@ -90,14 +90,14 @@ module "vpc" {
   environment   = "dev"
   aws_region    = "us-east-1"
   common_tags = {
-    environment   = "dev"
-    project-name  = "proyecto01"
-    cost-center   = "xxx"
-    owner         = "xxx"
-    area          = "xxx"
-    provisioned   = "xxx"
-    datatype      = "xxx"
-}
+      environment   = "dev"
+      project-name  = "proyecto01"
+      cost-center   = "xxx"
+      owner         = "xxx"
+      area          = "xxx"
+      provisioned   = "xxx"
+      datatype      = "xxx"
+  }
 
   # VPC configuration
   cidr_block           = "10.0.0.0/16"
