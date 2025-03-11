@@ -1,0 +1,23 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: cloudops-ref-repo-aws-vpc-terraform
+  tags: ['cloudops', 'aws', 'networking', 'terraform', 'vpc']
+  description: |
+    Este módulo combina 3 sub módulos (vpc, vpc endpoints y security groups) los cuales permiten:
+    vpc:
+      Crear una VPC con el CIDR block especificado.
+      Crear subredes públicas y privadas según la configuración proporcionada.
+      Configurar tablas de enrutamiento para cada subred.
+      Crear un Internet Gateway (IGW) si se especifica.
+      Crear un NAT Gateway si se especifica.
+      Configurar rutas personalizadas según sea necesario.
+      Configurar el grupo de seguridad predeterminado de la VPC.
+      Implementar VPC Flow Logs para monitoreo y auditoría del tráfico de red (característica obligatoria).
+  annotations:
+    backstage.io/managed-by-location: https://github.com/somospragma/cloudops-ref-repo-aws-vpc-terraform/blob/main/catalog.info.yml
+    backstage.io/techdocs-ref: dir:.
+spec:
+  type: IaC
+  lifecycle: production
+  owner: cloudops-team
