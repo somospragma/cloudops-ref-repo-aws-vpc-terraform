@@ -4,8 +4,7 @@ metadata:
   name: cloudops-ref-repo-aws-vpc-terraform
   tags: ['cloudops', 'aws', 'networking', 'terraform', 'vpc']
   description: |
-    Este módulo combina 3 sub módulos (vpc, vpc endpoints y security groups) los cuales permiten:
-    vpc:
+    Este módulo permite:
       Crear una VPC con el CIDR block especificado.
       Crear subredes públicas y privadas según la configuración proporcionada.
       Configurar tablas de enrutamiento para cada subred.
