@@ -84,14 +84,13 @@ resource "aws_route" "internet_route" {
 ########### NAT Resources #################
 ###########################################
 
-resource "aws_nat_gateway" "nat" {
+# Zonal NAT Gateway (original behavior)
+resource "aws_nat_gateway" "nat_zonal" {
   provider = aws.project
   for_each = {
-
     for network_key, network in var.subnet_config : "nat-0" => {
       service : network_key
-    } if network.public && length(network.subnets) > 0 && var.create_nat && try(network.subnets[0] != null, false)
-
+    } if network.public && length(network.subnets) > 0 && var.create_nat && var.nat_mode == "zonal" && try(network.subnets[0] != null, false)
   }
 
   allocation_id = aws_eip.eip[0].id
@@ -106,21 +105,50 @@ resource "aws_nat_gateway" "nat" {
   depends_on = [aws_internet_gateway.igw]
 }
 
-resource "aws_route" "nat_route" {
+# Regional NAT Gateway (new feature)
+resource "aws_nat_gateway" "nat_regional" {
   provider = aws.project
+  count    = var.create_nat && var.nat_mode == "regional" ? 1 : 0
+
+  vpc_id            = aws_vpc.vpc.id
+  availability_mode = "regional"
+
+  # Manual mode: specify EIPs per AZ
+  dynamic "availability_zone_address" {
+    for_each = var.nat_regional_mode == "manual" ? var.nat_regional_az_config : []
+    content {
+      availability_zone = availability_zone_address.value.availability_zone
+      allocation_ids    = availability_zone_address.value.allocation_ids
+    }
+  }
+
+  tags = merge(
+    { Name = "${join("-", tolist([var.client, var.project, var.environment, "nat-regional",]))}" }
+  )
+
+  # To ensure proper ordering, it is recommended to add an explicit dependency
+  # on the Internet Gateway for the VPC.
+  depends_on = [aws_internet_gateway.igw]
+}
+
+# Routes to NAT Gateway (works for both zonal and regional)
+resource "aws_route" "nat_route" {
+  provider               = aws.project
   for_each               = { for key, value in var.subnet_config : key => value if var.create_nat && value.include_nat }
   route_table_id         = aws_route_table.route_table[each.key].id
   destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id             = aws_nat_gateway.nat["nat-0"].id
+  nat_gateway_id         = var.nat_mode == "regional" ? aws_nat_gateway.nat_regional[0].id : aws_nat_gateway.nat_zonal["nat-0"].id
 }
 
 ###########################################
 ############# EIP Resources ###############
 ###########################################
 
+# EIP only needed for zonal NAT Gateway
+# Regional NAT Gateway in auto mode manages IPs automatically
 resource "aws_eip" "eip" {
   provider = aws.project
-  count  = var.create_nat ? 1 : 0
+  count    = var.create_nat && var.nat_mode == "zonal" ? 1 : 0
   # checkov:skip=CKV2_AWS_19: this elastic ip is associated with nat, for that reason the alert can be ignored
   tags = merge(
     { Name = "${join("-", tolist([var.client, var.project, var.environment, "eip"]))}" }

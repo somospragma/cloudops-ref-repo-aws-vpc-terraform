@@ -2,6 +2,11 @@
 ########## Common variables ###############
 ###########################################
 
+variable "profile" {
+  type = string
+  description = "Profile name containing the access credentials to deploy the infrastructure on AWS"
+}
+
 variable "aws_region" {
   type = string
   description = "AWS region where resources will be deployed"
@@ -79,31 +84,14 @@ variable "create_nat" {
 
 variable "nat_mode" {
   type = string
-  description = "NAT Gateway mode: 'zonal' (one per AZ, requires public subnets) or 'regional' (single NAT for all AZs, no public subnet required)"
-  default = "zonal"
-  validation {
-    condition     = can(regex("^(zonal|regional)$", var.nat_mode))
-    error_message = "nat_mode must be either 'zonal' or 'regional'"
-  }
+  description = "NAT Gateway mode: 'zonal' or 'regional'"
+  default = "regional"
 }
 
 variable "nat_regional_mode" {
   type = string
-  description = "Regional NAT Gateway IP management mode: 'auto' (AWS manages IPs automatically) or 'manual' (you specify EIPs per AZ)"
+  description = "Regional NAT Gateway mode: 'auto' or 'manual'"
   default = "auto"
-  validation {
-    condition     = can(regex("^(auto|manual)$", var.nat_regional_mode))
-    error_message = "nat_regional_mode must be either 'auto' or 'manual'"
-  }
-}
-
-variable "nat_regional_az_config" {
-  type = list(object({
-    availability_zone = string
-    allocation_ids    = list(string)
-  }))
-  description = "Configuration for regional NAT Gateway in manual mode. List of objects with availability_zone and allocation_ids (EIP allocation IDs)"
-  default = []
 }
 
 ###########################################
@@ -131,25 +119,7 @@ variable "subnet_config" {
       availability_zone = string
     }))
   }))
-  description = <<EOF
-    Custom subnet and route configuration. It is a map where each key represents a group of subnets (e.g. 'public', 'private') and the value is an object with the following structure:
-    - custom_routes: (list) A list of objects, each representing a custom route with the following properties:
-      - destination_cidr_block: (string) The destination CIDR block for the route.
-      - carrier_gateway_id: (string, optional) Identifier of a carrier gateway. This attribute can only be used when the VPC contains a subnet which is associated with a Wavelength Zone.
-      - core_network_arn: (string, optional) The Amazon Resource Name (ARN) of a core network.
-      - egress_only_gateway_id: (string, optional) Identifier of a VPC Egress Only Internet Gateway.
-      - nat_gateway_id: (string, optional) Identifier of a VPC NAT gateway.
-      - local_gateway_id: (string, optional) Identifier of a Outpost local gateway.
-      - network_interface_id: (string, optional) Identifier of an EC2 network interface.
-      - transit_gateway_id: (string, optional) Identifier of an EC2 Transit Gateway.
-      - vpc_endpoint_id: (string, optional) Identifier of a VPC Endpoint.
-      - vpc_peering_connection_id: (string, optional) Identifier of a VPC peering connection.
-    - public: (bool) If true, set 0.0.0.0/0 to igw.
-    - include_nat: (bool, optional) If true, set 0.0.0.0/0 to nat.
-    - subnets: (list) A list of objects, each representing a subnet with the following properties:
-      - cidr_block: (string) The IPv4 CIDR block for the subnet.
-      - availability_zone: (string) AZ for the subnet.
-  EOF
+  description = "Custom subnet and route configuration"
 }
 
 ###########################################
@@ -162,5 +132,5 @@ variable "flow_log_retention_in_days" {
     condition     = can(regex("^[0-9]*$", var.flow_log_retention_in_days))
     error_message = "Must be a number"
   }
-  description = "Specifies the number of days you want to retain log events in the specified log group. Possible values are: 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1096, 1827, 2192, 2557, 2922, 3288, 3653, and 0. If you select 0, the events in the log group are always retained and never expire"
+  description = "Specifies the number of days you want to retain log events in the specified log group"
 }
