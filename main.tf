@@ -65,15 +65,15 @@ resource "aws_route_table_association" "subnet_association" {
 
 resource "aws_internet_gateway" "igw" {
   provider = aws.project
-  count  = var.create_igw ? 1 : 0
-  vpc_id = aws_vpc.vpc.id
+  count    = var.create_igw ? 1 : 0
+  vpc_id   = aws_vpc.vpc.id
   tags = merge(
     { Name = "${join("-", tolist([var.client, var.project, var.environment, "igw"]))}" }
   )
 }
 
 resource "aws_route" "internet_route" {
-  provider = aws.project
+  provider               = aws.project
   for_each               = { for key, value in var.subnet_config : key => value if var.create_igw && value.public }
   route_table_id         = aws_route_table.route_table[each.key].id
   destination_cidr_block = "0.0.0.0/0"
@@ -97,7 +97,7 @@ resource "aws_nat_gateway" "nat_zonal" {
   subnet_id     = aws_subnet.subnet["${each.value.service}-0"].id
 
   tags = merge(
-    { Name = "${join("-", tolist([var.client, var.project, var.environment, "nat",]))}" }
+    { Name = "${join("-", tolist([var.client, var.project, var.environment, "nat", ]))}" }
   )
 
   # To ensure proper ordering, it is recommended to add an explicit dependency
@@ -116,14 +116,15 @@ resource "aws_nat_gateway" "nat_regional" {
   # Manual mode: specify EIPs per AZ
   dynamic "availability_zone_address" {
     for_each = var.nat_regional_mode == "manual" ? var.nat_regional_az_config : []
+    iterator = az_config
     content {
-      availability_zone = availability_zone_address.value.availability_zone
-      allocation_ids    = availability_zone_address.value.allocation_ids
+      availability_zone = az_config.value.availability_zone
+      allocation_ids    = az_config.value.allocation_ids
     }
   }
 
   tags = merge(
-    { Name = "${join("-", tolist([var.client, var.project, var.environment, "nat-regional",]))}" }
+    { Name = "${join("-", tolist([var.client, var.project, var.environment, "nat-regional", ]))}" }
   )
 
   # To ensure proper ordering, it is recommended to add an explicit dependency
@@ -198,8 +199,8 @@ resource "aws_route" "custom_route" {
 
 resource "aws_iam_role" "vpc_flow_logs_role" {
   provider = aws.project
-  name = "${join("-", tolist([var.client, var.project, var.environment, "vpc-flow-logs-role"]))}" #"${var.client}-${var.environment}-vpc-flow-logs-role"
-  
+  name     = join("-", tolist([var.client, var.project, var.environment, "vpc-flow-logs-role"])) #"${var.client}-${var.environment}-vpc-flow-logs-role"
+
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
@@ -212,7 +213,7 @@ resource "aws_iam_role" "vpc_flow_logs_role" {
       }
     ]
   })
-  
+
   tags = merge(
     { Name = "${var.client}-${var.environment}-vpc-flow-logs-role" }
   )
@@ -220,14 +221,14 @@ resource "aws_iam_role" "vpc_flow_logs_role" {
 
 resource "aws_iam_policy" "vpc_flow_logs_policy" {
   provider = aws.project
-  name = "${join("-", tolist([var.client, var.project, var.environment, "vpc-flow-logs-policy"]))}"#"${var.client}-${var.environment}-vpc-flow-logs-policy"
-  
+  name     = join("-", tolist([var.client, var.project, var.environment, "vpc-flow-logs-policy"])) #"${var.client}-${var.environment}-vpc-flow-logs-policy"
+
   policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
       {
-        Effect   = "Allow",
-        Action   = [
+        Effect = "Allow",
+        Action = [
           "logs:CreateLogGroup",
           "logs:CreateLogStream",
           "logs:PutLogEvents"
@@ -239,13 +240,13 @@ resource "aws_iam_policy" "vpc_flow_logs_policy" {
 }
 
 resource "aws_iam_role_policy_attachment" "vpc_flow_logs_role_policy_attachment" {
-  provider = aws.project
+  provider   = aws.project
   role       = aws_iam_role.vpc_flow_logs_role.name
   policy_arn = aws_iam_policy.vpc_flow_logs_policy.arn
 }
 
 resource "aws_cloudwatch_log_group" "vpc_flow_log_group" {
-  provider = aws.project
+  provider          = aws.project
   name              = "/aws/vpc/flow-logs/${aws_vpc.vpc.id}"
   retention_in_days = var.flow_log_retention_in_days
   tags = merge(
@@ -254,12 +255,12 @@ resource "aws_cloudwatch_log_group" "vpc_flow_log_group" {
 }
 
 resource "aws_flow_log" "vpc_flow_log" {
-  provider = aws.project
-  vpc_id                = aws_vpc.vpc.id
-  log_destination       = aws_cloudwatch_log_group.vpc_flow_log_group.arn
-  log_destination_type  = "cloud-watch-logs"
-  traffic_type          = "ALL"
-  iam_role_arn          = aws_iam_role.vpc_flow_logs_role.arn
+  provider             = aws.project
+  vpc_id               = aws_vpc.vpc.id
+  log_destination      = aws_cloudwatch_log_group.vpc_flow_log_group.arn
+  log_destination_type = "cloud-watch-logs"
+  traffic_type         = "ALL"
+  iam_role_arn         = aws_iam_role.vpc_flow_logs_role.arn
 
   tags = merge(
     { Name = "${join("-", tolist([var.client, var.project, var.environment, "vpc-flow-log"]))}" }
@@ -270,9 +271,9 @@ resource "aws_flow_log" "vpc_flow_log" {
 ####### Resource to solve CKV2_AWS_12 #####
 ###########################################
 resource "aws_default_security_group" "default" {
-  
+
   provider = aws.project
-  vpc_id = aws_vpc.vpc.id
+  vpc_id   = aws_vpc.vpc.id
   tags = {
     Name = "default"
   }
