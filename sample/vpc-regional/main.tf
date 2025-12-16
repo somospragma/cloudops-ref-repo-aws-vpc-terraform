@@ -5,7 +5,7 @@
 module "vpc" {
   source = "../../"
   providers = {
-    aws.project = aws.alias01              #Write manually alias (the same alias name configured in providers.tf)
+    aws.project = aws.principal              #Write manually alias (the same alias name configured in providers.tf)
   }
 
   # Common configuration

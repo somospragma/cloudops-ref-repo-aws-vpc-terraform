@@ -35,3 +35,15 @@ override.tf.json
 # Ignore CLI configuration files
 .terraformrc
 terraform.rc
+
+# Ignore lock files
+.terraform.lock.hcl
+
+# Ignore sample directories terraform files
+sample/**/.terraform/
+sample/**/.terraform.lock.hcl
+sample/**/terraform.tfstate
+sample/**/terraform.tfstate.*
+sample/**/terraform.tfstate.backup
+sample/**/*.log
+sample/**/.DS_Store
