@@ -33,4 +33,7 @@ module "vpc" {
 
   # VPC Flow Logs configuration (mandatory)
   flow_log_retention_in_days = var.flow_log_retention_in_days
+
+  # Additional tags (optional)
+  additional_tags = var.additional_tags
 }

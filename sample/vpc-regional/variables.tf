@@ -134,3 +134,13 @@ variable "flow_log_retention_in_days" {
   }
   description = "Specifies the number of days you want to retain log events in the specified log group"
 }
+
+###########################################
+########## Additional Tags ################
+###########################################
+
+variable "additional_tags" {
+  type        = map(string)
+  description = "Additional tags to apply to all resources"
+  default     = {}
+}
