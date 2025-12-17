@@ -164,3 +164,13 @@ variable "flow_log_retention_in_days" {
   }
   description = "Specifies the number of days you want to retain log events in the specified log group. Possible values are: 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1096, 1827, 2192, 2557, 2922, 3288, 3653, and 0. If you select 0, the events in the log group are always retained and never expire"
 }
+
+###########################################
+########## Additional Tags ################
+###########################################
+
+variable "additional_tags" {
+  type        = map(string)
+  description = "Additional tags to apply to all resources created by this module"
+  default     = {}
+}

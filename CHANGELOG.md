@@ -5,6 +5,27 @@ Todos los cambios notables en este proyecto serán documentados en este archivo.
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2025-12-17
+
+### Añadido
+- Variable `additional_tags` para aplicar tags adicionales a todos los recursos del módulo
+- Soporte para tags personalizados siguiendo el mismo patrón del módulo EKS Cluster
+- Archivo `locals.tf` para centralizar la generación de nombres de recursos
+
+### Cambiado
+- **BREAKING CHANGE**: Refactorización completa de nomenclatura usando `locals.tf`
+- Todos los nombres de recursos ahora se generan de forma centralizada en `locals.tf`
+- Simplificación del código en `main.tf` usando referencias a `local.*`
+- Todos los recursos ahora soportan `additional_tags` mediante merge con tags base
+- Actualizado sample vpc-regional con ejemplo de uso de additional_tags
+- Mejorada la legibilidad y mantenibilidad del código siguiendo el patrón del módulo EKS
+
+### Beneficios
+- **Consistencia**: Todos los nombres siguen el mismo patrón centralizado
+- **Mantenibilidad**: Cambios en nomenclatura solo requieren modificar `locals.tf`
+- **Claridad**: El código en `main.tf` es más limpio y fácil de leer
+- **Escalabilidad**: Fácil agregar nuevos recursos con nomenclatura consistente
+
 ## [1.1.0] - 2025-12-15
 
 ### Añadido

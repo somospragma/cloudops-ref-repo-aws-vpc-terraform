@@ -169,6 +169,13 @@ module "vpc" {
 
   # VPC Flow Logs configuration (obligatorio)
   flow_log_retention_in_days = 30
+
+  # Additional tags (opcional)
+  additional_tags = {
+    ManagedBy  = "Terraform"
+    Team       = "CloudOps"
+    CostCenter = "Engineering"
+  }
 }
 ```
 
@@ -226,6 +233,13 @@ module "vpc" {
 
   # VPC Flow Logs configuration (obligatorio)
   flow_log_retention_in_days = 30
+
+  # Additional tags (opcional)
+  additional_tags = {
+    ManagedBy  = "Terraform"
+    Team       = "CloudOps"
+    CostCenter = "Engineering"
+  }
 }
 ```
 
@@ -290,6 +304,13 @@ module "vpc" {
 
   # VPC Flow Logs configuration (obligatorio)
   flow_log_retention_in_days = 30
+
+  # Additional tags (opcional)
+  additional_tags = {
+    ManagedBy  = "Terraform"
+    Team       = "CloudOps"
+    CostCenter = "Engineering"
+  }
 }
 ```
 
@@ -345,6 +366,7 @@ module "vpc" {
 | <a name="input_nat_regional_mode"></a> [nat\_regional\_mode](#input\_nat\_regional\_mode) | Modo de gestión de IPs para NAT Gateway Regional: 'auto' (AWS gestiona automáticamente) o 'manual' (especificar EIPs por AZ) | `string` | `"auto"` | no |
 | <a name="input_nat_regional_az_config"></a> [nat\_regional\_az\_config](#input\_nat\_regional\_az\_config) | Configuración para NAT Gateway Regional en modo manual. Lista de objetos con availability_zone y allocation_ids | `list(object)` | `[]` | no |
 | <a name="input_flow_log_retention_in_days"></a> [flow\_log\_retention\_in\_days](#input\_flow\_log\_retention\_in\_days) | Número de días para retener los logs de VPC Flow en CloudWatch | `number` | `30` | yes |
+| <a name="input_additional_tags"></a> [additional\_tags](#input\_additional\_tags) | Tags adicionales para aplicar a todos los recursos creados por este módulo | `map(string)` | `{}` | no |
 
 ## Outputs
 

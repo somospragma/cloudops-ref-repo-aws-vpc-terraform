@@ -10,7 +10,8 @@ resource "aws_vpc" "vpc" {
   enable_dns_support   = var.enable_dns_support
   enable_dns_hostnames = var.enable_dns_hostnames
   tags = merge(
-    { Name = "${join("-", tolist([var.client, var.project, var.environment, "vpc"]))}" }
+    { Name = local.vpc_name },
+    var.additional_tags
   )
 }
 
@@ -20,19 +21,14 @@ resource "aws_vpc" "vpc" {
 
 resource "aws_subnet" "subnet" {
   provider = aws.project
-  for_each = {
-    for item in flatten([for netkwork_key, network in var.subnet_config : [for subnet in network.subnets : {
-      "service" : netkwork_key
-      "subnet_index" : index(network.subnets, subnet)
-      "cidr_block" : subnet.cidr_block
-      "availability_zone" : "${var.aws_region}${subnet.availability_zone}"
-    }]]) : "${item.service}-${item.subnet_index}" => item
-  }
-  availability_zone = each.value["availability_zone"]
+  for_each = local.subnet_names
+
+  availability_zone = each.value.availability_zone
   vpc_id            = aws_vpc.vpc.id
-  cidr_block        = each.value["cidr_block"]
+  cidr_block        = each.value.cidr_block
   tags = merge(
-    { Name = "${join("-", tolist([var.client, var.project, var.environment, "subnet", each.value["service"], tonumber(each.value["subnet_index"]) + 1]))}" }
+    { Name = each.value.name },
+    var.additional_tags
   )
 }
 
@@ -41,22 +37,17 @@ resource "aws_route_table" "route_table" {
   for_each = var.subnet_config
   vpc_id   = aws_vpc.vpc.id
   tags = merge(
-    { Name = "${join("-", tolist([var.client, var.project, var.environment, "rtb", each.key]))}" }
+    { Name = local.route_table_names[each.key] },
+    var.additional_tags
   )
 }
 
 resource "aws_route_table_association" "subnet_association" {
   provider = aws.project
-  for_each = {
-    for item in flatten([for netkwork_key, network in var.subnet_config : [for subnet in network.subnets : {
-      "service" : netkwork_key
-      "subnet_index" : index(network.subnets, subnet)
-      "cidr_block" : subnet.cidr_block
-      "availability_zone" : subnet.availability_zone
-    }]]) : "${item.service}-${item.subnet_index}" => item
-  }
-  subnet_id      = aws_subnet.subnet["${each.value.service}-${each.value.subnet_index}"].id
-  route_table_id = aws_route_table.route_table["${each.value.service}"].id
+  for_each = local.subnet_names
+
+  subnet_id      = aws_subnet.subnet[each.key].id
+  route_table_id = aws_route_table.route_table[each.value.service].id
 }
 
 ###########################################
@@ -68,7 +59,8 @@ resource "aws_internet_gateway" "igw" {
   count    = var.create_igw ? 1 : 0
   vpc_id   = aws_vpc.vpc.id
   tags = merge(
-    { Name = "${join("-", tolist([var.client, var.project, var.environment, "igw"]))}" }
+    { Name = local.igw_name },
+    var.additional_tags
   )
 }
 
@@ -97,7 +89,8 @@ resource "aws_nat_gateway" "nat_zonal" {
   subnet_id     = aws_subnet.subnet["${each.value.service}-0"].id
 
   tags = merge(
-    { Name = "${join("-", tolist([var.client, var.project, var.environment, "nat", ]))}" }
+    { Name = local.nat_zonal_name },
+    var.additional_tags
   )
 
   # To ensure proper ordering, it is recommended to add an explicit dependency
@@ -124,7 +117,8 @@ resource "aws_nat_gateway" "nat_regional" {
   }
 
   tags = merge(
-    { Name = "${join("-", tolist([var.client, var.project, var.environment, "nat-regional", ]))}" }
+    { Name = local.nat_regional_name },
+    var.additional_tags
   )
 
   # To ensure proper ordering, it is recommended to add an explicit dependency
@@ -152,7 +146,8 @@ resource "aws_eip" "eip" {
   count    = var.create_nat && var.nat_mode == "zonal" ? 1 : 0
   # checkov:skip=CKV2_AWS_19: this elastic ip is associated with nat, for that reason the alert can be ignored
   tags = merge(
-    { Name = "${join("-", tolist([var.client, var.project, var.environment, "eip"]))}" }
+    { Name = local.eip_name },
+    var.additional_tags
   )
 }
 
@@ -199,7 +194,7 @@ resource "aws_route" "custom_route" {
 
 resource "aws_iam_role" "vpc_flow_logs_role" {
   provider = aws.project
-  name     = join("-", tolist([var.client, var.project, var.environment, "vpc-flow-logs-role"])) #"${var.client}-${var.environment}-vpc-flow-logs-role"
+  name     = local.vpc_flow_logs_role_name
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -215,13 +210,14 @@ resource "aws_iam_role" "vpc_flow_logs_role" {
   })
 
   tags = merge(
-    { Name = "${var.client}-${var.environment}-vpc-flow-logs-role" }
+    { Name = local.vpc_flow_logs_role_name },
+    var.additional_tags
   )
 }
 
 resource "aws_iam_policy" "vpc_flow_logs_policy" {
   provider = aws.project
-  name     = join("-", tolist([var.client, var.project, var.environment, "vpc-flow-logs-policy"])) #"${var.client}-${var.environment}-vpc-flow-logs-policy"
+  name     = local.vpc_flow_logs_policy_name
 
   policy = jsonencode({
     Version = "2012-10-17",
@@ -250,7 +246,8 @@ resource "aws_cloudwatch_log_group" "vpc_flow_log_group" {
   name              = "/aws/vpc/flow-logs/${aws_vpc.vpc.id}"
   retention_in_days = var.flow_log_retention_in_days
   tags = merge(
-    { Name = "${join("-", tolist([var.client, var.project, var.environment, "flow-logs"]))}" }
+    { Name = local.flow_logs_name },
+    var.additional_tags
   )
 }
 
@@ -263,7 +260,8 @@ resource "aws_flow_log" "vpc_flow_log" {
   iam_role_arn         = aws_iam_role.vpc_flow_logs_role.arn
 
   tags = merge(
-    { Name = "${join("-", tolist([var.client, var.project, var.environment, "vpc-flow-log"]))}" }
+    { Name = local.vpc_flow_log_name },
+    var.additional_tags
   )
 }
 
@@ -274,7 +272,8 @@ resource "aws_default_security_group" "default" {
 
   provider = aws.project
   vpc_id   = aws_vpc.vpc.id
-  tags = {
-    Name = "default"
-  }
+  tags = merge(
+    { Name = local.default_sg_name },
+    var.additional_tags
+  )
 }
