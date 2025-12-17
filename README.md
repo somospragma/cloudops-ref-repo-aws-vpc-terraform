@@ -23,15 +23,16 @@ El módulo cuenta con la siguiente estructura:
 ```bash
 cloudops-ref-repo-aws-vpc-terraform/
 └── sample/
-    ├── data.tf
-    ├── main.tf
-    ├── outputs.tf
-    ├── providers.tf
-    ├── terraform.tfvars.sample
-    └── variables.tf
+    ├── vpc-regional/
+    │   ├── main.tf
+    │   ├── outputs.tf
+    │   ├── providers.tf
+    │   ├── terraform.tfvars
+    │   └── variables.tf
 ├── .gitignore
 ├── CHANGELOG.md
 ├── data.tf
+├── locals.tf          # Nomenclatura centralizada
 ├── main.tf
 ├── outputs.tf
 ├── providers.tf
@@ -136,11 +137,11 @@ module "vpc" {
       subnets = [
         {
           cidr_block        = "10.0.1.0/24"
-          availability_zone = "a"
+          availability_zone = "us-east-1a"
         },
         {
           cidr_block        = "10.0.2.0/24"
-          availability_zone = "b"
+          availability_zone = "us-east-1b"
         }
       ]
       custom_routes = []
@@ -151,11 +152,11 @@ module "vpc" {
       subnets = [
         {
           cidr_block        = "10.0.3.0/24"
-          availability_zone = "a"
+          availability_zone = "us-east-1a"
         },
         {
           cidr_block        = "10.0.4.0/24"
-          availability_zone = "b"
+          availability_zone = "us-east-1b"
         }
       ]
       custom_routes = []
@@ -210,15 +211,15 @@ module "vpc" {
       subnets = [
         {
           cidr_block        = "10.0.1.0/24"
-          availability_zone = "a"
+          availability_zone = "us-east-1a"
         },
         {
           cidr_block        = "10.0.2.0/24"
-          availability_zone = "b"
+          availability_zone = "us-east-1b"
         },
         {
           cidr_block        = "10.0.3.0/24"
-          availability_zone = "c"
+          availability_zone = "us-east-1c"
         }
       ]
       custom_routes = []
@@ -273,11 +274,11 @@ module "vpc" {
       subnets = [
         {
           cidr_block        = "10.0.1.0/24"
-          availability_zone = "a"
+          availability_zone = "us-east-1a"
         },
         {
           cidr_block        = "10.0.2.0/24"
-          availability_zone = "b"
+          availability_zone = "us-east-1b"
         }
       ]
       custom_routes = []
@@ -353,13 +354,14 @@ module "vpc" {
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_client"></a> [client](#input\_client) | Nombre del cliente | `string` | n/a | yes |
-| <a name="input_functionality"></a> [functionality](#input\_functionality) | Funcionalidad del módulo | `string` | n/a | yes |
+| <a name="input_project"></a> [project](#input\_project) | Nombre del proyecto | `string` | n/a | yes |
 | <a name="input_environment"></a> [environment](#input\_environment) | Entorno de despliegue | `string` | n/a | yes |
+| <a name="input_aws_region"></a> [aws\_region](#input\_aws\_region) | Región de AWS donde se desplegará la VPC | `string` | n/a | yes |
 | <a name="input_cidr_block"></a> [cidr\_block](#input\_cidr\_block) | El bloque CIDR para la VPC | `string` | n/a | yes |
 | <a name="input_instance_tenancy"></a> [instance\_tenancy](#input\_instance\_tenancy) | Tenancy de las instancias lanzadas en la VPC | `string` | `"default"` | no |
 | <a name="input_enable_dns_support"></a> [enable\_dns\_support](#input\_enable\_dns\_support) | Habilitar soporte DNS para la VPC | `bool` | `true` | no |
 | <a name="input_enable_dns_hostnames"></a> [enable\_dns\_hostnames](#input\_enable\_dns\_hostnames) | Habilitar nombres de host DNS para la VPC | `bool` | `true` | no |
-| <a name="input_subnet_config"></a> [subnet\_config](#input\_subnet\_config) | Configuración de subredes y rutas personalizadas. Es un mapa donde cada clave representa un grupo de subredes (por ejemplo, 'public', 'private') y el valor es un objeto con la siguiente estructura:<br>- `public`: (bool) Indica si la subred es pública.<br>- `include_nat`: (bool, opcional) Indica si la subred privada debe incluir un NAT Gateway. Por defecto es false.<br>- `subnets`: (list) Una lista de objetos, cada uno representando una subred con las siguientes propiedades:<br>  - `cidr_block`: (string) El bloque CIDR para la subred.<br>  - `availability_zone`: (string) La zona de disponibilidad para la subred.<br>- `custom_routes`: (list) Una lista de objetos, cada uno representando una ruta personalizada con las siguientes propiedades:<br>  - `destination_cidr_block`: (string) El bloque CIDR de destino para la ruta.<br>  - `carrier_gateway_id`: (string, opcional) ID del Carrier Gateway.<br>  - `core_network_arn`: (string, opcional) ARN de la red central.<br>  - `egress_only_gateway_id`: (string, opcional) ID del Egress Only Internet Gateway.<br>  - `nat_gateway_id`: (string, opcional) ID del NAT Gateway.<br>  - `local_gateway_id`: (string, opcional) ID del Local Gateway.<br>  - `network_interface_id`: (string, opcional) ID de la interfaz de red.<br>  - `transit_gateway_id`: (string, opcional) ID del Transit Gateway.<br>  - `vpc_endpoint_id`: (string, opcional) ID del VPC Endpoint.<br>  - `vpc_peering_connection_id`: (string, opcional) ID de la conexión de peering de VPC. | `map(object({`<br>`  public = bool`<br>`  include_nat = optional(bool, false)`<br>`  subnets = list(object({`<br>`    cidr_block = string`<br>`    availability_zone = string`<br>`  }))`<br>`  custom_routes = list(object({`<br>`    destination_cidr_block = string`<br>`    carrier_gateway_id = optional(string)`<br>`    core_network_arn = optional(string)`<br>`    egress_only_gateway_id = optional(string)`<br>`    nat_gateway_id = optional(string)`<br>`    local_gateway_id = optional(string)`<br>`    network_interface_id = optional(string)`<br>`    transit_gateway_id = optional(string)`<br>`    vpc_endpoint_id = optional(string)`<br>`    vpc_peering_connection_id = optional(string)`<br>`  }))`<br>`}))` | n/a | yes |
+| <a name="input_subnet_config"></a> [subnet\_config](#input\_subnet\_config) | Configuración de subredes y rutas personalizadas. Es un mapa donde cada clave representa un grupo de subredes (por ejemplo, 'public', 'private') y el valor es un objeto con la siguiente estructura:<br>- `public`: (bool) Indica si la subred es pública.<br>- `include_nat`: (bool, opcional) Indica si la subred privada debe incluir un NAT Gateway. Por defecto es false.<br>- `subnets`: (list) Una lista de objetos, cada uno representando una subred con las siguientes propiedades:<br>  - `cidr_block`: (string) El bloque CIDR para la subred.<br>  - `availability_zone`: (string) La zona de disponibilidad completa para la subred (ej: "us-east-1a").<br>- `custom_routes`: (list) Una lista de objetos, cada uno representando una ruta personalizada con las siguientes propiedades:<br>  - `destination_cidr_block`: (string) El bloque CIDR de destino para la ruta.<br>  - `carrier_gateway_id`: (string, opcional) ID del Carrier Gateway.<br>  - `core_network_arn`: (string, opcional) ARN de la red central.<br>  - `egress_only_gateway_id`: (string, opcional) ID del Egress Only Internet Gateway.<br>  - `nat_gateway_id`: (string, opcional) ID del NAT Gateway.<br>  - `local_gateway_id`: (string, opcional) ID del Local Gateway.<br>  - `network_interface_id`: (string, opcional) ID de la interfaz de red.<br>  - `transit_gateway_id`: (string, opcional) ID del Transit Gateway.<br>  - `vpc_endpoint_id`: (string, opcional) ID del VPC Endpoint.<br>  - `vpc_peering_connection_id`: (string, opcional) ID de la conexión de peering de VPC. | `map(object({`<br>`  public = bool`<br>`  include_nat = optional(bool, false)`<br>`  subnets = list(object({`<br>`    cidr_block = string`<br>`    availability_zone = string`<br>`  }))`<br>`  custom_routes = list(object({`<br>`    destination_cidr_block = string`<br>`    carrier_gateway_id = optional(string)`<br>`    core_network_arn = optional(string)`<br>`    egress_only_gateway_id = optional(string)`<br>`    nat_gateway_id = optional(string)`<br>`    local_gateway_id = optional(string)`<br>`    network_interface_id = optional(string)`<br>`    transit_gateway_id = optional(string)`<br>`    vpc_endpoint_id = optional(string)`<br>`    vpc_peering_connection_id = optional(string)`<br>`  }))`<br>`}))` | n/a | yes |
 | <a name="input_create_igw"></a> [create\_igw](#input\_create\_igw) | Crear Internet Gateway | `bool` | `false` | no |
 | <a name="input_create_nat"></a> [create\_nat](#input\_create\_nat) | Crear NAT Gateway | `bool` | `false` | no |
 | <a name="input_nat_mode"></a> [nat\_mode](#input\_nat\_mode) | Modo de NAT Gateway: 'zonal' (uno por AZ, requiere subnets públicas) o 'regional' (único para toda la VPC, sin subnets públicas) | `string` | `"zonal"` | no |
