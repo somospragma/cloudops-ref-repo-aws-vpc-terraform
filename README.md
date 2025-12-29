@@ -1,5 +1,18 @@
 # **Módulo Terraform: cloudops-ref-repo-aws-vpc-terraform**
 
+## 🔐 Permisos IAM Requeridos
+
+**IMPORTANTE**: Antes de usar este módulo, asegúrate de tener los permisos IAM necesarios.
+
+📋 **Ver permisos detallados**: [`iam-permissions/README.md`](./iam-permissions/README.md)
+
+**Aplicar política mínima:**
+```bash
+aws iam create-policy \
+  --policy-name VPCModuleDeploymentPolicy \
+  --policy-document file://iam-permissions/vpc-deployment-policy.json
+```
+
 ## Descripción:
 
 Este módulo facilita la creación de una Virtual Private Cloud (VPC) completa en AWS, proporcionando configuraciones de red, subredes, tablas de enrutamiento y gateways. Incluye la creación de subredes públicas y privadas, Internet Gateway (IGW), NAT Gateway, rutas personalizadas y VPC Flow Logs para una gestión eficiente y segura de la red.
