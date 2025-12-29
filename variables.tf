@@ -3,23 +3,23 @@
 ###########################################
 
 variable "aws_region" {
-  type = string
+  type        = string
   description = "AWS region where resources will be deployed"
 }
 
 variable "environment" {
-  type = string
+  type        = string
   description = "Environment where resources will be deployed"
 }
 
 variable "client" {
-  type = string
+  type        = string
   description = "Client name"
 }
 
 variable "project" {
-  type = string  
-    description = "Project name"
+  type        = string
+  description = "Project name"
 }
 
 ###########################################
@@ -27,7 +27,7 @@ variable "project" {
 ###########################################
 
 variable "cidr_block" {
-  type = string
+  type        = string
   description = "The IPv4 CIDR block for the VPC"
   validation {
     condition     = can(cidrhost(var.cidr_block, 0))
@@ -36,9 +36,9 @@ variable "cidr_block" {
 }
 
 variable "instance_tenancy" {
-  type = string
+  type        = string
   description = "A tenancy option for instances launched into the VPC"
-  default = "default"
+  default     = "default"
   validation {
     condition     = can(regex("^(default|dedicated)$", var.instance_tenancy))
     error_message = "Invalid tenancy, must be default or dedicated"
@@ -46,15 +46,15 @@ variable "instance_tenancy" {
 }
 
 variable "enable_dns_hostnames" {
-  type = bool
+  type        = bool
   description = "A boolean flag to enable/disable DNS hostnames in the VPC"
-  default = true
+  default     = true
 }
 
 variable "enable_dns_support" {
-  type = bool
+  type        = bool
   description = "A boolean flag to enable/disable DNS support in the VPC"
-  default = true
+  default     = true
 }
 
 ###########################################
@@ -62,9 +62,9 @@ variable "enable_dns_support" {
 ###########################################
 
 variable "create_igw" {
-  type = bool
+  type        = bool
   description = "A boolean flag to enable internet gateway creation"
-  default = true
+  default     = true
 }
 
 ###########################################
@@ -72,9 +72,38 @@ variable "create_igw" {
 ###########################################
 
 variable "create_nat" {
-  type = bool
+  type        = bool
   description = "A boolean flag to enable nat gateway creation"
-  default = true
+  default     = true
+}
+
+variable "nat_mode" {
+  type        = string
+  description = "NAT Gateway mode: 'zonal' (one per AZ, requires public subnets) or 'regional' (single NAT for all AZs, no public subnet required)"
+  default     = "zonal"
+  validation {
+    condition     = can(regex("^(zonal|regional)$", var.nat_mode))
+    error_message = "nat_mode must be either 'zonal' or 'regional'"
+  }
+}
+
+variable "nat_regional_mode" {
+  type        = string
+  description = "Regional NAT Gateway IP management mode: 'auto' (AWS manages IPs automatically) or 'manual' (you specify EIPs per AZ)"
+  default     = "auto"
+  validation {
+    condition     = can(regex("^(auto|manual)$", var.nat_regional_mode))
+    error_message = "nat_regional_mode must be either 'auto' or 'manual'"
+  }
+}
+
+variable "nat_regional_az_config" {
+  type = list(object({
+    availability_zone = string
+    allocation_ids    = list(string)
+  }))
+  description = "Configuration for regional NAT Gateway in manual mode. List of objects with availability_zone and allocation_ids (EIP allocation IDs)"
+  default     = []
 }
 
 ###########################################
@@ -95,7 +124,7 @@ variable "subnet_config" {
       vpc_endpoint_id           = optional(string)
       vpc_peering_connection_id = optional(string)
     }))
-    public = bool
+    public      = bool
     include_nat = optional(bool, false)
     subnets = list(object({
       cidr_block        = string
@@ -134,4 +163,14 @@ variable "flow_log_retention_in_days" {
     error_message = "Must be a number"
   }
   description = "Specifies the number of days you want to retain log events in the specified log group. Possible values are: 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1096, 1827, 2192, 2557, 2922, 3288, 3653, and 0. If you select 0, the events in the log group are always retained and never expire"
+}
+
+###########################################
+########## Additional Tags ################
+###########################################
+
+variable "additional_tags" {
+  type        = map(string)
+  description = "Additional tags to apply to all resources created by this module"
+  default     = {}
 }

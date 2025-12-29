@@ -1,0 +1,84 @@
+###########################################
+########## Common variables ###############
+###########################################
+
+profile     = "profile01"
+aws_region  = "us-east-1"
+environment = "dev"
+client      = "cliente01"
+project     = "proyecto01"
+
+###########################################
+############ VPC variables ################
+###########################################
+
+cidr_block                 = "10.0.0.0/16"   
+instance_tenancy           = "default"        
+enable_dns_support         = true             
+enable_dns_hostnames       = true 
+
+###########################################
+############### IGW variables #############
+###########################################
+
+create_igw = true
+
+###########################################
+############### NAT variables #############
+###########################################
+
+create_nat        = true
+nat_mode          = "regional"  # Regional NAT Gateway
+nat_regional_mode = "auto"      # AWS manages IPs automatically
+
+###########################################
+############# Subnet variables ############
+###########################################
+
+# Note: Regional NAT Gateway does NOT require public subnets
+subnet_config = {
+  private = {
+    public      = false
+    include_nat = true
+    subnets = [
+      {
+        cidr_block        = "10.0.1.0/24"
+        availability_zone = "a"
+      },
+      {
+        cidr_block        = "10.0.2.0/24"
+        availability_zone = "b"
+      },
+      {
+        cidr_block        = "10.0.3.0/24"
+        availability_zone = "c"
+      }
+    ]
+    custom_routes = []
+  }
+  database = {
+    public      = false
+    include_nat = false
+    subnets = [
+      {
+        cidr_block        = "10.0.11.0/24"
+        availability_zone = "a"
+      },
+      {
+        cidr_block        = "10.0.12.0/24"
+        availability_zone = "b"
+      },
+      {
+        cidr_block        = "10.0.13.0/24"
+        availability_zone = "c"
+      }
+    ]
+    custom_routes = []
+  }
+}
+
+###########################################
+########### Flow logs variables ###########
+###########################################
+
+flow_log_retention_in_days = 7
