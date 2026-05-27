@@ -94,6 +94,23 @@ variable "nat_regional_mode" {
   default = "auto"
 }
 
+variable "nat_regional_custom_routes" {
+  type = list(object({
+    destination_cidr_block    = string
+    carrier_gateway_id        = optional(string)
+    core_network_arn          = optional(string)
+    egress_only_gateway_id    = optional(string)
+    nat_gateway_id            = optional(string)
+    local_gateway_id          = optional(string)
+    network_interface_id      = optional(string)
+    transit_gateway_id        = optional(string)
+    vpc_endpoint_id           = optional(string)
+    vpc_peering_connection_id = optional(string)
+  }))
+  description = "Custom routes for the regional NAT Gateway route table (edge association). Only applies when nat_mode = regional."
+  default = []
+}
+
 ###########################################
 ############# subnet variables ############
 ###########################################
