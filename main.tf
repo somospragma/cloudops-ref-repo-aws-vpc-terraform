@@ -135,6 +135,27 @@ resource "aws_route" "nat_route" {
   nat_gateway_id         = var.nat_mode == "regional" ? aws_nat_gateway.nat_regional[0].id : aws_nat_gateway.nat_zonal["nat-0"].id
 }
 
+# Custom routes for regional NAT Gateway route table (edge association)
+resource "aws_route" "nat_regional_custom_route" {
+  provider = aws.project
+  for_each = {
+    for idx, route in var.nat_regional_custom_routes : idx => route
+    if var.create_nat && var.nat_mode == "regional"
+  }
+
+  route_table_id            = aws_nat_gateway.nat_regional[0].route_table_id
+  destination_cidr_block    = each.value.destination_cidr_block
+  carrier_gateway_id        = try(each.value.carrier_gateway_id, null)
+  core_network_arn          = try(each.value.core_network_arn, null)
+  egress_only_gateway_id    = try(each.value.egress_only_gateway_id, null)
+  nat_gateway_id            = try(each.value.nat_gateway_id, null)
+  local_gateway_id          = try(each.value.local_gateway_id, null)
+  network_interface_id      = try(each.value.network_interface_id, null)
+  transit_gateway_id        = try(each.value.transit_gateway_id, null)
+  vpc_endpoint_id           = try(each.value.vpc_endpoint_id, null)
+  vpc_peering_connection_id = try(each.value.vpc_peering_connection_id, null)
+}
+
 ###########################################
 ############# EIP Resources ###############
 ###########################################

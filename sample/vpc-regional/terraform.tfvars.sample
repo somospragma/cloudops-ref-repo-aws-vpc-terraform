@@ -31,6 +31,15 @@ create_nat        = true
 nat_mode          = "regional"  # Regional NAT Gateway
 nat_regional_mode = "auto"      # AWS manages IPs automatically
 
+# Custom routes for the NAT regional route table (edge association)
+# Useful for return traffic to spokes via Transit Gateway
+nat_regional_custom_routes = [
+  # {
+  #   destination_cidr_block = "10.0.0.0/8"
+  #   transit_gateway_id     = "tgw-0123456789abcdef0"
+  # }
+]
+
 ###########################################
 ############# Subnet variables ############
 ###########################################

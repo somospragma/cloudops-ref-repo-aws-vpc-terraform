@@ -5,6 +5,15 @@ Todos los cambios notables en este proyecto serán documentados en este archivo.
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.4] - 2026-05-27
+
+### 🚀 Añadido
+- **Rutas Custom en NAT Regional**: Nueva variable `nat_regional_custom_routes` para inyectar rutas en la route table del NAT Gateway regional (edge association)
+  - Permite agregar rutas de retorno a spokes vía Transit Gateway
+  - Solo aplica cuando `create_nat = true` y `nat_mode = "regional"`
+  - Backward-compatible: default `[]` (sin cambios si no se usa)
+  - Soporta todos los targets: `transit_gateway_id`, `nat_gateway_id`, `network_interface_id`, etc.
+
 ## [1.0.3] - 2024-12-29
 
 ### 📚 Documentación

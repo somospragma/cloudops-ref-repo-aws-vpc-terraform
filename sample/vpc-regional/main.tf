@@ -28,8 +28,9 @@ module "vpc" {
   create_nat = var.create_nat
   
   # Regional NAT Gateway configuration
-  nat_mode          = var.nat_mode
-  nat_regional_mode = var.nat_regional_mode
+  nat_mode                   = var.nat_mode
+  nat_regional_mode          = var.nat_regional_mode
+  nat_regional_custom_routes = var.nat_regional_custom_routes
 
   # VPC Flow Logs configuration (mandatory)
   flow_log_retention_in_days = var.flow_log_retention_in_days
